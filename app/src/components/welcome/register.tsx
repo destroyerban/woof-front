@@ -1,0 +1,274 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useState } from 'react';
+import { Alert, Keyboard, Platform, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { register } from '../../API/user';
+import { RootStackParamList } from "../../navigation/types";
+
+
+const ErrorText = ({ message }: { message?: string }) => 
+  message ? <Text className="text-red-600 text-xs mb-2 ml-1">{message}</Text> : null;
+
+
+export default function RegisterScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  const goToLogin  = () => navigation.navigate("Login")
+
+  
+  const  [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    fullName: '',
+    password: '',
+    occupation: '',
+    birthDate: '',
+    purpose: 'estudio',
+  });
+
+  // Desestructuramos valores y creamos setters que actualizan formData
+  const { username, email, fullName, password, occupation } = formData;
+  const setUsername = (v: string) => setFormData(prev => ({ ...prev, username: v }));
+  const setEmail = (v: string) => setFormData(prev => ({ ...prev, email: v }));
+  const setFullName = (v: string) => setFormData(prev => ({ ...prev, fullName: v }));
+  const setPassword = (v: string) => setFormData(prev => ({ ...prev, password: v }));
+  const setOccupation = (v: string) => setFormData(prev => ({ ...prev, occupation: v }));
+
+  const [birthDateDisplay, setBirthDateDisplay] = useState('YYYY-MM-DD');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [birthDate, setBirthDate] = useState<Date>(new Date());
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [openPet, setOpenPet] = useState(false);
+  const [selectedPet, setSelectedPet] = useState('gato');
+
+
+  const [openPurpose, setOpenPurpose] = useState(false);
+  const [selectedPurpose, setSelectedPurpose] = useState('ESTUDIO');
+  const [itemsPurpose, setItemsPurpose] = useState([
+    { label: 'ESTUDIO', value: 'ESTUDIO' },
+    { label: 'TRABAJO', value: 'TRABAJO' },
+    { label: 'PERSONAL', value: 'PERSONAL' },
+  ]);
+
+  // VALIDACIONES
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+
+  const validateField = (name: string, value: string) => {
+    let error = '';
+
+    if (!value.trim()) {
+      error = 'Este campo es obligatorio.';
+    } else {
+      if (name === 'email' && !emailRegex.test(value)) error = 'Formato de correo inválido.';
+      if (name === 'fullName' && !nameRegex.test(value)) error = 'Solo se permiten letras y espacios.';
+      if (name === 'password' && value.length < 6) error = 'Mínimo 6 caracteres.';
+    }
+
+    setErrors(prev => ({ ...prev, [name]: error }));
+    return !error;
+  };
+
+  const validateBirthDate = () => {
+    const error = birthDateDisplay === 'YYYY-MM-DD' ? 'Debe seleccionar su fecha de nacimiento.' : '';
+    setErrors(prev => ({ ...prev, birthDate: error }));
+    return !error;
+  };
+
+  const validateAllFields = () => {
+    const values: Record<string, string> = {
+      username: formData.username,
+      email: formData.email,
+      fullName: formData.fullName,
+      password: formData.password,
+      occupation: formData.occupation,
+      birthDate: birthDateDisplay,
+      purpose: selectedPurpose,
+    };
+  
+    const areFieldsValid = Object.entries(values).every(([field, value]) =>
+      validateField(field, value)
+    );
+  
+    return areFieldsValid && validateBirthDate();
+  };
+  
+
+  // REGISTRO
+  const handleRegister = () => {
+    Keyboard.dismiss(); 
+    if (!validateAllFields()) {
+      Alert.alert("Error de Formulario", "Por favor, corrija los errores y complete todos los campos.");
+      return;
+    }
+
+    const formattedBirthDate = birthDateDisplay.split('-').reverse().join('-');
+    Alert.alert(
+      "Registro Exitoso",
+      "Tu cuenta ha sido creada correctamente.",
+    );
+
+    goToLogin()
+  };
+
+  // ESTILOS
+  // Usamos 'leading-normal' para prevenir el recorte de texto
+  const inputStyle = "border-2 border-blue-300 rounded-lg px-3 py-3 w-full text-base leading-tight text-gray-800 focus:border-blue-500";
+  const inputContainerStyle = "mb-4";
+  const dropdownStyle = { borderColor: '#93C5FD', borderWidth: 2, borderRadius: 8 };
+
+  const onChangeDate = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android' && event.type === 'dismissed') {
+      setShowDatePicker(false);
+      return;
+    }
+    setShowDatePicker(Platform.OS === 'ios');
+    const currentDate = selectedDate || birthDate;
+
+    const formattedDate = (currentDate as Date).toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).replace(/\//g, '-');
+
+    setBirthDate(currentDate as Date);
+    setBirthDateDisplay(formattedDate);
+    if (Platform.OS !== 'ios') validateBirthDate();
+  };
+
+  const showCalendar = () => {
+    Keyboard.dismiss(); // Cierra el teclado antes de abrir el calendario
+    setShowDatePicker(true);
+    setOpenPet(false);
+    setOpenPurpose(false);
+  };
+
+  const submitRegister = async () => {
+    Keyboard.dismiss();
+
+    if (!validateAllFields()) {
+      Alert.alert("Error de Formulario", "Por favor, corrija los errores y complete todos los campos.");
+      return;
+    }
+
+    try {
+      const formattedBirthDate = birthDate.toISOString().substring(0, 10);
+
+      const payload = {
+        username: formData.username,
+        email: formData.email,
+        nameComlpete: formData.fullName,       
+        password: formData.password,
+        oficio: formData.occupation,
+        dateOfBirth: formattedBirthDate,
+        purpose: selectedPurpose,
+      };
+
+      const res = await register(payload);
+
+      if (res) {
+        Alert.alert("Registro Exitoso", "Tu cuenta ha sido creada correctamente.");
+        goToLogin();
+      } else {
+        Alert.alert("Error", "No se pudo registrar. Intenta de nuevo.");
+      }
+    } catch (error) {
+      Alert.alert("Error en el servidor", "No fue posible registrar el usuario.");
+    }
+  };
+
+
+  return (
+    <SafeAreaView className="flex-1 bg-white">
+      {/* CLAVE: Envolver el área de contenido con TouchableWithoutFeedback para cerrar el teclado */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        {/* Usar ScrollView para permitir desplazamiento en formularios largos y evitar recortes */}
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} 
+                    className="flex-1 bg-white"> 
+            
+            <View className="w-full max-w-md self-center">
+              
+              <Text className="text-3xl font-bold text-center text-blue-600 mb-8">
+                  Registro de Usuario
+              </Text>
+
+              {[
+                { placeholder: "Usuario", value: username, setter: setUsername, name: "username" },
+                { placeholder: "Email", value: email, setter: setEmail, name: "email", keyboardType: "email-address" },
+                { placeholder: "Nombre Completo", value: fullName, setter: setFullName, name: "fullName" },
+                { placeholder: "Contraseña", value: password, setter: setPassword, name: "password", secure: true },
+                { placeholder: "Oficio", value: occupation, setter: setOccupation, name: "occupation" },
+              ].map(({ placeholder, value, setter, name, keyboardType, secure }) => (
+                <View key={name} className={inputContainerStyle}>
+                  <TextInput
+                    className={inputStyle}
+                    placeholder={placeholder}
+                    placeholderTextColor="#6B7280"
+                    value={value}
+                    onChangeText={setter}
+                    keyboardType={keyboardType as any}
+                    secureTextEntry={secure}
+                    onBlur={() => validateField(name, value)}
+                  />
+                  <ErrorText message={errors[name]} />
+                </View>
+              ))}
+
+              {/* Fecha */}
+              <View className={inputContainerStyle}>
+                <Text className="text-blue-700 mb-1 ml-1 font-semibold">Fecha de Nacimiento</Text>
+                <TouchableOpacity className={`${inputStyle} flex-row justify-between items-center`} onPress={showCalendar}>
+                  <Text className={birthDateDisplay === 'YYYY-MM-DD' ? 'text-gray-500' : 'text-gray-800'}>
+                    {birthDateDisplay}
+                  </Text>
+                  <MaterialCommunityIcons name="calendar-month-outline" size={24} color="#2563EB" />
+                </TouchableOpacity>
+                <ErrorText message={errors.birthDate} />
+              </View>
+
+              {showDatePicker && (
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={birthDate}
+                  mode="date"
+                  display="compact"
+                  onChange={onChangeDate}
+                />
+              )}
+
+              {/* Dropdown Fines */}
+              <Text className="text-blue-700 mb-1 ml-1 font-semibold">Fines para usar la app</Text>
+              {/* CLAVE: Eliminar zIndex y aumentar marginBottom cuando está abierto (ej. 250) */}
+              <View style={{ marginBottom: openPurpose ? 120 : 10 }}>
+                <DropDownPicker
+                  onOpen={() => setOpenPet(false)}
+                  open={openPurpose}
+                  value={selectedPurpose}
+                  items={itemsPurpose}
+                  setOpen={setOpenPurpose}
+                  setValue={setSelectedPurpose}
+                  setItems={setItemsPurpose}
+                  placeholder="Selecciona un fin"
+                  style={dropdownStyle}
+                  dropDownContainerStyle={dropdownStyle}
+                  listMode="SCROLLVIEW"
+                />
+              </View>
+
+              {/* Botón de Registro */}
+              <TouchableOpacity 
+                onPress={submitRegister}
+                className="bg-blue-600 rounded-lg p-4 w-full items-center mt-4 mb-20 shadow-md">
+                <Text className="text-white font-bold text-base">Registrarse</Text>
+              </TouchableOpacity>
+            </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </SafeAreaView>
+  );
+}
