@@ -8,7 +8,7 @@ import { RootStackParamList } from "../../navigation/types";
 export default function LoginScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, "Login">>();
-  const imagenlogo = require("../../../../assets/images/welcome/loginimg/catlogo.jpg");
+  const imagenlogo = require("../../../../assets/images/welcome/loginimg/woof-logo.jpg");
   const {login} = useAuth();
   
 
@@ -63,7 +63,7 @@ export default function LoginScreen() {
           <View className="w-36 h-36 self-center mb-10 relative border-4 border-blue-500 rounded-xl overflow-hidden">
             <Image source={imagenlogo} className="w-full h-full" resizeMode="cover" />
             <Text className="absolute inset-x-0 bottom-0 text-center text-blue-500 font-bold text-sm bg-white/60 py-1">
-              MIAU
+              WOOF
             </Text>
           </View>
 

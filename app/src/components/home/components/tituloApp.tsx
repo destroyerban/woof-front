@@ -7,14 +7,14 @@ interface Props {
   title?: string;
 }
 
-export default function TituloApp({ title = "MIAU" }: Props) {
+export default function TituloApp({ title = "WOOF" }: Props) {
   return (
     <View style={styles.wrapper}>
       {/* Card del header (más bajita) */}
       <View style={styles.card}>
         {/* Logo redondo (más pequeño) */}
         <View style={styles.logoCircle}>
-          <MaterialCommunityIcons name="cat" size={22} color="#FFFFFF" />
+          <MaterialCommunityIcons name="dog" size={22} color="#FFFFFF" />
           <View style={styles.miniIconContainer}>
             <MaterialIcons name="view-kanban" size={11} color="#1D4ED8" />
           </View>

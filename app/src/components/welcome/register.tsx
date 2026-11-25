@@ -44,7 +44,7 @@ export default function RegisterScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [openPet, setOpenPet] = useState(false);
-  const [selectedPet, setSelectedPet] = useState('gato');
+  const [selectedPet, setSelectedPet] = useState('perro');
 
 
   const [openPurpose, setOpenPurpose] = useState(false);

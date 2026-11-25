@@ -17,7 +17,7 @@ export default function HomeMain() {
     <View className="flex-1 bg-blue-50">
       {/* 🔵 HEADER FIJO (logo + subtítulo) */}
       <View className="pt-8 px-4 pb-1">
-        <TituloApp title="MIAU" />
+        <TituloApp title="WOOF" />
       </View>
 
       {/* 🔽 CONTENIDO SCROLLEABLE */}

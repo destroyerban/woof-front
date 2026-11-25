@@ -31,7 +31,7 @@ export default function MainPet() {
     <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
       <View className="flex-1 items-center justify-start bg-gradient-to-b from-blue-900 via-blue-800 to-sky-700 pt-6 pb-6">
         <View className="w-full px-6 pt-4">
-          <TituloApp title="MIAU" />
+          <TituloApp title="WOOF" />
         </View>
 
         <View className="w-full px-6 mt-4">

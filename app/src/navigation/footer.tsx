@@ -71,7 +71,7 @@ export default function Footer() {
           if (route.name === "Pet") {
             return (
               <MaterialCommunityIcons
-                name="cat"
+                name="dog"
                 size={22}
                 color={color}
               />
