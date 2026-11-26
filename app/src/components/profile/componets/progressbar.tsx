@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Animated, LayoutChangeEvent, Text, TouchableOpacity, View } from "react-native";
 import { getProgressByState } from "../../../API/user";
 import { StatusKey } from "../types";
+import { useHomeRefresh } from "../../../context/homeRefreshContext";
 
 const STATUS_KEYS: StatusKey[] = ["backlog", "todo", "doing", "done"];
 const LABELS: Record<StatusKey, string> = {
@@ -12,6 +13,8 @@ const LABELS: Record<StatusKey, string> = {
 };
 
 export default function ProgressBarWithAPI() {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { tasksVersion } = useHomeRefresh();
   const [selectedStatus, setSelectedStatus] = useState<StatusKey>("backlog");
   const [progress, setProgress] = useState(0);
   const widthAnim = useRef(new Animated.Value(0)).current;
@@ -34,7 +37,7 @@ export default function ProgressBarWithAPI() {
       }
     };
     fetchProgress();
-  }, [selectedStatus]);
+  }, [selectedStatus, tasksVersion]);
 
   useEffect(() => {
     if (containerWidth > 0) {

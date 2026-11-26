@@ -20,6 +20,7 @@ import useProyectosUsuario, {
   ProyectoUsuario,
   TaskPreview,
 } from "../../hooks/useProyectosUsuario";
+import { useHomeRefresh } from "../../../../context/homeRefreshContext";
 
 type RootNav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -77,6 +78,8 @@ function getCardColors(categoryName: string | undefined | null, index: number) {
 }
 
 export default function HomeProyecto() {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { tasksVersion } = useHomeRefresh();
   const navigation = useNavigation<RootNav>();
   const { proyectos, loading } = useProyectosUsuario();
   const { auth } = useAuth(); // 👈 usuario logueado
@@ -121,7 +124,7 @@ export default function HomeProyecto() {
       return () => {
         isActive = false;
       };
-    }, [proyectoAbierto?.proyectId]),
+    }, [proyectoAbierto?.proyectId, tasksVersion]),
   );
 
   // Navegar a modal correcto según rol

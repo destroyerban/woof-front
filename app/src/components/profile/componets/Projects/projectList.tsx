@@ -6,8 +6,11 @@ import { deleteProject } from "../../../../API/proyect";
 import { getUserProjects } from "../../../../API/user_proyect";
 import { RootStackParamList } from "../../../../navigation/types";
 import { ProjectItem } from "../../types";
+import { useHomeRefresh } from "../../../../context/homeRefreshContext";
 
 export default function ProjectList({ refreshFlag }: { refreshFlag?: number }) {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { projectsVersion } = useHomeRefresh();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [projects, setProjects] = useState<ProjectItem[]>([]);
@@ -62,7 +65,7 @@ export default function ProjectList({ refreshFlag }: { refreshFlag?: number }) {
     fetchProjects();
     const unsubscribe = navigation.addListener("focus", fetchProjects);
     return unsubscribe;
-  }, [navigation, refreshFlag]);
+  }, [navigation, refreshFlag, projectsVersion]);
 
   return (
     <View className="border border-gray-200 rounded-lg p-2">

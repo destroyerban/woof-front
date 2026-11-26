@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getUserProjects } from "../../../API/user_proyect";
 import useAuth from "../../../hook/useAuth";
+import { useHomeRefresh } from "../../../context/homeRefreshContext";
 
 export interface TaskPreview {
   id: number;
@@ -22,6 +23,8 @@ export interface ProyectoUsuario {
 }
 
 export default function useProyectosUsuario() {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { projectsVersion, tasksVersion } = useHomeRefresh();
   const { auth } = useAuth();
   const [proyectos, setProyectos] = useState<ProyectoUsuario[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -48,7 +51,7 @@ export default function useProyectosUsuario() {
   useEffect(() => {
     // carga inicial
     refetch();
-  }, [refetch]);
+  }, [refetch, projectsVersion, tasksVersion]);
 
   return { proyectos, loading, refetch };
 }

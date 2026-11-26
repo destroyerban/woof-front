@@ -1,6 +1,7 @@
 import { NavigationContainer, NavigationIndependentTree } from "@react-navigation/native";
 import React from "react";
 import { HomeRefreshProvider } from "./src/context/homeRefreshContext";
+import { RealtimeProvider } from "./src/context/realtimeContext";
 import { AuthProvider } from "./src/context/userContext";
 import RootNavigation from "./src/navigation/rootNavigation";
 
@@ -10,11 +11,13 @@ export default function StartScreen() {
   return (
     <AuthProvider>
       <HomeRefreshProvider>
-        <NavigationIndependentTree>
-          <NavigationContainer>
-            <RootNavigation />
-          </NavigationContainer>
-        </NavigationIndependentTree>
+        <RealtimeProvider>
+          <NavigationIndependentTree>
+            <NavigationContainer>
+              <RootNavigation />
+            </NavigationContainer>
+          </NavigationIndependentTree>
+        </RealtimeProvider>
       </HomeRefreshProvider>
     </AuthProvider>
   );

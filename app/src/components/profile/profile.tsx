@@ -14,10 +14,13 @@ import ModalTaskPersonal from "./componets/taskPersonal/modalTaskPersonal";
 import PersonalProjectList from "./componets/taskPersonal/personalProjectList";
 import UserInfo from "./componets/userInfo";
 import { ProjectItem, StatusKey } from "./types";
+import { useHomeRefresh } from "../../context/homeRefreshContext";
 
 
 
 export default function Profile() {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { tasksVersion, projectsVersion } = useHomeRefresh();
 
   const {logout} = useContext(AuthContext);
   const { auth } = useAuth();
@@ -78,7 +81,7 @@ export default function Profile() {
       }
     };
     loadPersonalTasks();
-  }, [auth, projectsRefresh, loadingTasksFlag]);
+  }, [auth, projectsRefresh, loadingTasksFlag, tasksVersion, projectsVersion]);
 
 
   const handleListChange = (list: "projects" | "personal") => {

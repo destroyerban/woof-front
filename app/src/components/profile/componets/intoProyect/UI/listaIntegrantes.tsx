@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 import { changeUserRoleInProject, listUsersInProject, removeUserFromProject } from "../../../../../API/user_proyect";
+import { useHomeRefresh } from "../../../../../context/homeRefreshContext";
 
 type Integrante = {
   id: string;
@@ -18,6 +19,8 @@ type Props = {
 };
 
 export default function ListaIntegrantes({ projectId, integrantes, setIntegrantes, rolUsuarioActual }: Props) {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { projectsVersion } = useHomeRefresh();
 
   const [showIntegrantes, setShowIntegrantes] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -51,7 +54,7 @@ export default function ListaIntegrantes({ projectId, integrantes, setIntegrante
       }
     };
     fetchUsers();
-  }, [projectId]);
+  }, [projectId, projectsVersion]);
 
   const eliminarIntegrante = (id: string | number) => {
   Alert.alert(

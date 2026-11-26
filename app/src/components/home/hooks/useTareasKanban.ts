@@ -1,6 +1,7 @@
 // src/components/home/hooks/useTareasKanban.ts
 import { useCallback, useEffect, useState } from "react";
 import { getTaskes } from "../../../API/task_personal";
+import { useHomeRefresh } from "../../../context/homeRefreshContext";
 
 
 // Estados posibles en el Kanban
@@ -33,6 +34,8 @@ const inicializarTareasPorEstado = (): TareasPorEstado => ({
 });
 
 export default function useTareasKanban() {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { tasksVersion } = useHomeRefresh();
   const [tareasPorEstado, setTareasPorEstado] =
     useState<TareasPorEstado>(inicializarTareasPorEstado);
   const [loading, setLoading] = useState<boolean>(true);
@@ -93,7 +96,7 @@ export default function useTareasKanban() {
   useEffect(() => {
     // carga inicial (por si entras a Home por primera vez)
     refetch();
-  }, [refetch]);
+  }, [refetch, tasksVersion]);
 
   return { tareasPorEstado, loading, refetch };
 }

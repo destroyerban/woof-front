@@ -3,6 +3,7 @@ import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
 import { getStates } from "../../../../../API/state";
 import { deleteTaskInProject, listTaskProjectsByState, updateProjectTask } from "../../../../../API/task_proyect";
 import TareaItem from "./tareaItem";
+import { useHomeRefresh } from "../../../../../context/homeRefreshContext";
 
 type Tarea = {
   id: string;
@@ -21,6 +22,8 @@ interface Props {
 }
 
 export default function ListaTareas({ rol, filtroCategoria, proyectId }: Props) {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { tasksVersion } = useHomeRefresh();
   const [tareas, setTareas] = useState<Tarea[]>([]);
   const [states, setStates] = useState<any[]>([]);
 
@@ -79,7 +82,7 @@ export default function ListaTareas({ rol, filtroCategoria, proyectId }: Props) 
     };
 
     fetchTareas();
-  }, [filtroCategoria, proyectId]);
+  }, [filtroCategoria, proyectId, tasksVersion]);
 
 
   // --- 3. Marcar cambios ---

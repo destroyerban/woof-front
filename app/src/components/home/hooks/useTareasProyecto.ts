@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useHomeRefresh } from "../../../context/homeRefreshContext";
 
 interface Tarea {
   id?: number;
@@ -8,6 +9,8 @@ interface Tarea {
 }
 
 export default function useTareasProyecto() {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { tasksVersion, projectsVersion } = useHomeRefresh();
   const [tareasConProyecto, setTareasConProyecto] = useState<Tarea[]>([]);
   const [tareasSinProyecto, setTareasSinProyecto] = useState<Tarea[]>([]);
 
@@ -25,7 +28,7 @@ export default function useTareasProyecto() {
 
     setTareasConProyecto(mockConProyecto);
     setTareasSinProyecto(mockSinProyecto);
-  }, []);
+  }, [tasksVersion, projectsVersion]);
 
   return { tareasConProyecto, tareasSinProyecto };
 }

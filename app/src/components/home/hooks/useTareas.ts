@@ -1,6 +1,7 @@
 // src/components/home/hooks/useTareas.ts
 import { useEffect, useMemo, useState } from "react";
 import { getTaskes } from "../../../API/task_personal";
+import { useHomeRefresh } from "../../../context/homeRefreshContext";
 
 
 // Estados tal como vienen del backend
@@ -45,6 +46,8 @@ function mapEstadoToUI(estado: EstadoBackend): string {
  * - estadoUI: "Back Log" | "To Do" | "Doing" | "Done"
  */
 export default function useTareas(estadoUI: string) {
+  // Se recarga cuando llega un aviso en tiempo real (Socket.IO)
+  const { tasksVersion } = useHomeRefresh();
   const [tareas, setTareas] = useState<Tarea[]>([]);
 
   useEffect(() => {
@@ -65,7 +68,7 @@ export default function useTareas(estadoUI: string) {
 
       setTareas(mapped);
     })();
-  }, []);
+  }, [tasksVersion]);
 
   const tareasFiltradas = useMemo(
     () => tareas.filter((t) => t.estado === estadoUI),
