@@ -3,9 +3,13 @@ import { Alert, ScrollView, Text, View } from 'react-native';
 import TituloApp from '../home/components/tituloApp';
 import FeedButton from './components/FeedButton';
 import PetCanvas from './components/PetCanvas';
+import SpeechBubble from './components/SpeechBubble';
+import { useHomeRefresh } from '../../context/homeRefreshContext';
 import { usePet } from './hooks/usePet';
 
 export default function MainPet() {
+  // El mensaje del perro se actualiza cuando cambian las tareas (tiempo real)
+  const { tasksVersion } = useHomeRefresh();
   const {
     petState,
     feedCountToday,
@@ -35,6 +39,7 @@ export default function MainPet() {
         </View>
 
         <View className="w-full px-6 mt-4">
+          <SpeechBubble refreshKey={`${tasksVersion}-${feedCountToday}-${petState}`} />
           <PetCanvas state={petState} />
         </View>
 

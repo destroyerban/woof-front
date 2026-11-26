@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { createTaskInProject } from "../../../../../../API/task_proyect";
 import { listUsersInProject } from "../../../../../../API/user_proyect";
+import ModalDesglosarIA from "../../../../../ia/modalDesglosarIA";
 
 
 export default function BottomAñadirTarea({ proyectId }: { proyectId: string }) {
@@ -15,6 +16,22 @@ export default function BottomAñadirTarea({ proyectId }: { proyectId: string })
   const [usuarios, setUsuarios] = useState<any[]>([]);
 
   const [estado, setEstado] = useState<number | null>(null);
+
+  // Desglosar con IA: todas las tareas elegidas van al mismo responsable, en BACKLOG.
+  const [modalIAVisible, setModalIAVisible] = useState(false);
+  const [responsableIA, setResponsableIA] = useState<number | null>(null);
+
+  const agregarDesdeIA = async (subtareas: { nombre: string; descripcion: string }[]) => {
+    if (!responsableIA) throw new Error("Elige un responsable.");
+    let creadas = 0;
+    for (const s of subtareas) {
+      const ok = await createTaskInProject(proyectId, s.nombre, s.descripcion, responsableIA, 1);
+      if (!ok) throw new Error(`Se crearon ${creadas} tareas, pero falló "${s.nombre}".`);
+      creadas++;
+    }
+    setResponsableIA(null);
+    Alert.alert("¡Listo! 🐾", `Se agregaron ${creadas} tareas al BACKLOG del proyecto.`);
+  };
   const estados = [
     { label: "Back Log", id: 1 },
     { label: "To Do", id: 2 },
@@ -76,6 +93,40 @@ export default function BottomAñadirTarea({ proyectId }: { proyectId: string })
           Añadir Tarea
         </Text>
       </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => setModalIAVisible(true)}
+        className="bg-white border-2 border-blue-800 px-5 py-2 rounded-lg mt-2"
+      >
+        <Text className="text-blue-800 font-bold text-center">🪄 Desglosar con IA</Text>
+      </TouchableOpacity>
+
+      <ModalDesglosarIA
+        visible={modalIAVisible}
+        onClose={() => {
+          setModalIAVisible(false);
+          setResponsableIA(null);
+        }}
+        onAgregar={agregarDesdeIA}
+        puedeAgregar={responsableIA !== null}
+        textoAyuda="Las tareas se agregarán en BACKLOG del proyecto."
+      >
+        <Text className="text-blue-800 font-semibold mt-2 mb-2">Responsable:</Text>
+        <View className="flex-row flex-wrap mb-1">
+          {usuarios.map((user) => (
+            <TouchableOpacity
+              key={user.userProyectId}
+              onPress={() => setResponsableIA(user.userProyectId)}
+              className={`px-3 py-2 rounded-full mr-2 mb-2 border ${
+                responsableIA === user.userProyectId ? "bg-blue-600 border-blue-600" : "bg-blue-50 border-blue-200"
+              }`}
+            >
+              <Text className={responsableIA === user.userProyectId ? "text-white font-semibold" : "text-blue-800"}>
+                {user.userName}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ModalDesglosarIA>
 
       <Modal
         animationType="slide"
